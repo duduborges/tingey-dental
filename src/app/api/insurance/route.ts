@@ -1,35 +1,33 @@
-import { supabase } from "@/app/lib/supabase";
+import { supabase, getClinic } from "@/app/lib/supabase";
 
 export async function GET() {
-  const clinicSlug = process.env.CLINIC_SLUG || "tingey-dental";
-
-  const { data, error } = await supabase
-    .from("insurance_plans")
-    .select("*")
-    .eq("clinic_slug", clinicSlug)
-    .eq("active", true)
-    .order("name");
-
-  if (error) {
-    console.error("Insurance fetch error:", error);
-    return Response.json({ error: "Failed to fetch insurance plans" }, { status: 500 });
+  const clinic = await getClinic();
+  if (!clinic) {
+    return Response.json({ error: "Clinic not found" }, { status: 404 });
   }
 
-  return Response.json({ plans: data || [] });
+  const plans: string[] = clinic.insurance_plans || [];
+  return Response.json({ plans });
 }
 
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, active } = body;
+    const { insurance_plans } = body;
+
+    const clinic = await getClinic();
+    if (!clinic) {
+      return Response.json({ error: "Clinic not found" }, { status: 404 });
+    }
 
     const { error } = await supabase
-      .from("insurance_plans")
-      .update({ active })
-      .eq("id", id);
+      .from("clinics")
+      .update({ insurance_plans })
+      .eq("id", clinic.id);
 
     if (error) {
-      return Response.json({ error: "Failed to update insurance plan" }, { status: 500 });
+      console.error("Insurance update error:", error);
+      return Response.json({ error: "Failed to update insurance plans" }, { status: 500 });
     }
 
     return Response.json({ success: true });

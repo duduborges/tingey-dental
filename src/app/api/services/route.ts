@@ -1,13 +1,15 @@
-import { supabase } from "@/app/lib/supabase";
+import { supabase, getClinicId } from "@/app/lib/supabase";
 
 export async function GET() {
-  const clinicSlug = process.env.CLINIC_SLUG || "tingey-dental";
+  const clinicId = await getClinicId();
+  if (!clinicId) {
+    return Response.json({ error: "Clinic not found" }, { status: 404 });
+  }
 
   const { data, error } = await supabase
     .from("services")
     .select("*")
-    .eq("clinic_slug", clinicSlug)
-    .eq("active", true)
+    .eq("clinic_id", clinicId)
     .order("name");
 
   if (error) {

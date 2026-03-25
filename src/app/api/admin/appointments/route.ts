@@ -1,16 +1,20 @@
-import { supabase } from "@/app/lib/supabase";
+import { supabase, getClinicId } from "@/app/lib/supabase";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const clinicSlug = process.env.CLINIC_SLUG || "tingey-dental";
   const status = url.searchParams.get("status");
   const dateFrom = url.searchParams.get("dateFrom");
   const dateTo = url.searchParams.get("dateTo");
 
+  const clinicId = await getClinicId();
+  if (!clinicId) {
+    return Response.json({ error: "Clinic not found" }, { status: 404 });
+  }
+
   let query = supabase
     .from("appointments")
     .select("*, services(name)")
-    .eq("clinic_slug", clinicSlug)
+    .eq("clinic_id", clinicId)
     .order("appointment_date", { ascending: true })
     .order("appointment_time", { ascending: true });
 
@@ -46,7 +50,7 @@ export async function PATCH(request: Request) {
 
     const { error } = await supabase
       .from("appointments")
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status })
       .eq("id", id);
 
     if (error) {
