@@ -1,0 +1,16 @@
+{
+  "name": "Tingey Dental",
+  "short_name": "Tingey Dental",
+  "description": "Family & Cosmetic Dentistry in Twin Falls, Idaho",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0033FF",
+  "icons": [
+    {
+      "src": "/images/logo.webp",
+      "sizes": "420x172",
+      "type": "image/webp"
+    }
+  ]
+}
